@@ -9,9 +9,11 @@ require (
 	github.com/h2non/gock v1.2.0
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.10.0
-	github.com/xcoulon/converse-mcp v0.0.0-20250819101740-2958bdb24ef2
+	github.com/xcoulon/converse-mcp v0.0.0-20250819152726-2da4b0cca723
 	k8s.io/apimachinery v0.33.0
 )
+
+// replace github.com/xcoulon/converse-mcp => ../converse-mcp
 
 require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect

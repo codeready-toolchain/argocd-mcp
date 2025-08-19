@@ -13,7 +13,8 @@ var StdioChannel = channel.Line(os.Stdin, os.Stdout)
 
 func NewServer(logger *slog.Logger, cl HTTPClient) *jrpc2.Server {
 	mux := mcpserver.NewMux("argocd-mcp", "0.1", logger).
-		WithTool(UnhealthyResourcesTool, UnhealthyResourcesHandle(cl)).
+		WithPrompt(UnhealthyResourcesPrompt, UnhealthyResourcesPromptHandle(cl)).
+		WithTool(UnhealthyResourcesTool, UnhealthyResourcesToolHandle(cl)).
 		Build()
 	return mcpserver.NewStdioServer(mux, logger)
 }
