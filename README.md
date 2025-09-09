@@ -23,7 +23,7 @@ task build
 
 [Install Goose](https://block.github.io/goose/docs/getting-started/installation) then [add the MCP server](https://block.github.io/goose/docs/getting-started/using-extensions#mcp-servers) with the following command line to run:
 
-`argocd-mcp --kubeconfig=</path/to/kubeconfig> --namespace <argocd_apps_namespace>`
+`argocd-mcp --argocd-token-file <path/to/token-file> --argocd-url <url>`
 
 ## Testing the server with Claude AI Desktop App
 
