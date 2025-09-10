@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"os"
+	"strings"
 	"testing"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
@@ -22,6 +23,9 @@ import (
 //go:embed argocd-applications-example.json
 var exampleApplicationsStr string
 
+//go:embed argocd-applications.json
+var applicationsStr string
+
 func TestServer(t *testing.T) {
 	// given
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -36,20 +40,62 @@ func TestServer(t *testing.T) {
 		srv.Stop()
 	}(cl, srv)
 
-	t.Run("call/unhealthyResources", func(t *testing.T) {
+	t.Run("call/unhealthyApplications", func(t *testing.T) {
 		// given
 		gock.Intercept()
 		gock.New("https://argocd-server").
-			Get("/api/v1/applications"). //TODO: check the token
-			MatchParam("name", "example").
+			Get("/api/v1/applications").
 			MatchHeader("Authorization", "Bearer secure-token").
 			Reply(200).
-			BodyString(exampleApplicationsStr)
+			BodyString(applicationsStr)
+		gock.Observe(gock.DumpRequest)
 		defer gock.Off() // Flush pending mocks after test execution
 
 		// when
 		resp, err := cl.Call(context.Background(), "tools/call", mcpapi.CallToolRequestParams{
-			Name:      "unhealthyResources",
+			Name: "unhealthyApplications",
+		})
+
+		// then
+		require.NoError(t, err)
+		callResult := &mcpapi.CallToolResult{}
+		err = json.Unmarshal([]byte(resp.ResultString()), callResult)
+		require.NoError(t, err)
+
+		// verify the `text` result
+		require.IsType(t, map[string]any{}, callResult.Content[0])
+		actualTextContent := mcpapi.TextContent{}
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.Content[0].(map[string]any), &actualTextContent)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []string{"a-progressing-application", "another-progressing-application", "a-degraded-application", "another-degraded-application"}, strings.Split(actualTextContent.Text, ", "))
+
+		// verify the `structured` content
+		require.IsType(t, map[string]any{}, callResult.StructuredContent)
+		t.Logf("callResult.StructuredContent: %v", callResult.StructuredContent)
+		actualStructuredContent := map[string]any{}
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.StructuredContent, &actualStructuredContent)
+		require.NoError(t, err)
+		assert.Equal(t,
+			map[string]any{
+				"progressing": []any{"a-progressing-application", "another-progressing-application"},
+				"degraded":    []any{"a-degraded-application", "another-degraded-application"}},
+			actualStructuredContent)
+	})
+	t.Run("call/unhealthyApplicationResources", func(t *testing.T) {
+		// given
+		gock.Intercept()
+		gock.New("https://argocd-server").
+			Get("/api/v1/applications").
+			MatchParam("name", "example").
+			MatchHeader("Authorization", "Bearer secure-token").
+			Reply(200).
+			BodyString(exampleApplicationsStr)
+		gock.Observe(gock.DumpRequest)
+		defer gock.Off() // Flush pending mocks after test execution
+
+		// when
+		resp, err := cl.Call(context.Background(), "tools/call", mcpapi.CallToolRequestParams{
+			Name:      "unhealthyApplicationResources",
 			Arguments: map[string]any{"name": "example"},
 		})
 
@@ -60,17 +106,29 @@ func TestServer(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedContent := argocdmcp.UnhealthyResources{
-			Resources: []*argocdv3.ResourceResult{
+			Resources: []argocdv3.ResourceStatus{
+				{
+					Group:     "apps",
+					Version:   "v1",
+					Kind:      "StatefulSet",
+					Namespace: "example-ns",
+					Name:      "example",
+					Status:    "Synced",
+					Health: &argocdv3.HealthStatus{
+						Status:  "Progressing",
+						Message: "Waiting for 1 pods to be ready...",
+					},
+				},
 				{
 					Group:     "external-secrets.io",
 					Version:   "v1beta1",
 					Kind:      "ExternalSecret",
 					Namespace: "example-ns",
 					Name:      "example-secret",
-					Status:    "SyncFailed",
-					Message:   "resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/3358522048\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first",
-					HookPhase: "Failed",
-					SyncPhase: "Sync",
+					Status:    "OutOfSync",
+					Health: &argocdv3.HealthStatus{
+						Status: "Missing",
+					},
 				},
 			},
 		}

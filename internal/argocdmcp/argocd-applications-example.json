@@ -1,312 +1,33 @@
 {
-    "metadata": {
-      "resourceVersion": "159091"
-    },
-    "items": [
-      {
-        "metadata": {
-          "name": "example",
-          "namespace": "argocd"
+  "metadata": {
+    "resourceVersion": "159091"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "example",
+        "namespace": "argocd"
+      },
+      "spec": {
+        "source": {
+          "repoURL": "https://git/org/repo",
+          "path": "components/example",
+          "targetRevision": "main"
         },
-        "spec": {
-          "source": {
-            "repoURL": "https://git/org/repo",
-            "path": "components/example",
-            "targetRevision": "main"
-          },
-          "destination": {
-            "server": "https://kubernetes.default.svc",
-            "namespace": "example-ns"
-          },
-          "project": "default",
-          "syncPolicy": {
-            "automated": {
-              "prune": true,
-              "selfHeal": true
-            },
-            "syncOptions": [
-              "CreateNamespace=true",
-              "PruneLast=true"
-            ],
-            "retry": {
-              "limit": 50,
-              "backoff": {
-                "duration": "15s"
-              }
-            }
-          }
+        "destination": {
+          "server": "https://kubernetes.default.svc",
+          "namespace": "example-ns"
         },
-        "status": {
-          "resources": [
-            {
-              "version": "v1",
-              "kind": "ConfigMap",
-              "namespace": "example-ns",
-              "name": "example-config",
-              "status": "Synced"
-            },
-            {
-              "version": "v1",
-              "kind": "ConfigMap",
-              "namespace": "example-ns",
-              "name": "example-datasource-tmpl",
-              "status": "Synced"
-            },
-            {
-              "version": "v1",
-              "kind": "Service",
-              "namespace": "example-ns",
-              "name": "example-http",
-              "status": "Synced",
-              "health": {
-                "status": "Healthy"
-              }
-            },
-            {
-              "version": "v1",
-              "kind": "Service",
-              "namespace": "example-ns",
-              "name": "example-kube-rbac-proxy",
-              "status": "Synced",
-              "health": {
-                "status": "Healthy"
-              }
-            },
-            {
-              "version": "v1",
-              "kind": "Service",
-              "namespace": "example-ns",
-              "name": "example-oauth-proxy",
-              "status": "Synced",
-              "health": {
-                "status": "Healthy"
-              }
-            },
-            {
-              "version": "v1",
-              "kind": "ServiceAccount",
-              "namespace": "example-ns",
-              "name": "example",
-              "status": "Synced"
-            },
-            {
-              "group": "apps",
-              "version": "v1",
-              "kind": "StatefulSet",
-              "namespace": "example-ns",
-              "name": "example",
-              "status": "Synced",
-              "health": {
-                "status": "Progressing",
-                "message": "Waiting for 1 pods to be ready..."
-              }
-            },
-            {
-              "group": "external-secrets.io",
-              "version": "v1beta1",
-              "kind": "ExternalSecret",
-              "namespace": "example-ns",
-              "name": "example-secret",
-              "status": "OutOfSync",
-              "health": {
-                "status": "Missing"
-              }
-            },
-            {
-              "group": "rbac.authorization.k8s.io",
-              "version": "v1",
-              "kind": "ClusterRoleBinding",
-              "name": "example-auth-delegator",
-              "status": "Synced"
-            }
-          ],
-          "sync": {
-            "status": "OutOfSync",
-            "comparedTo": {
-              "source": {
-                "repoURL": "https://git/org/repo",
-                "path": "components/example",
-                "targetRevision": "main"
-              },
-              "destination": {
-                "server": "https://kubernetes.default.svc",
-                "namespace": "example-ns"
-              }
-            },
-            "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04"
-          },
-          "health": {
-            "status": "Progressing",
-            "lastTransitionTime": "2025-08-07T13:48:04Z"
-          },
-          "reconciledAt": "2025-08-07T13:48:00Z",
-          "operationState": {
-            "operation": {
-              "sync": {
-                "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
-                "prune": true,
-                "syncOptions": [
-                  "CreateNamespace=true",
-                  "PruneLast=true"
-                ]
-              },
-              "initiatedBy": {
-                "automated": true
-              },
-              "retry": {
-                "limit": 50,
-                "backoff": {
-                  "duration": "15s"
-                }
-              }
-            },
-            "phase": "Running",
-            "message": "one or more objects failed to apply, reason: resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/1168318049\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first,resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/3358522048\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first. Retrying attempt #1 at 1:48PM.",
-            "syncResult": {
-              "resources": [
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "Namespace",
-                  "namespace": "",
-                  "name": "example-ns",
-                  "status": "Synced",
-                  "message": "namespace/example-ns created",
-                  "hookPhase": "Running",
-                  "syncPhase": "PreSync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "ServiceAccount",
-                  "namespace": "example-ns",
-                  "name": "example",
-                  "status": "Synced",
-                  "message": "serviceaccount/example created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "ConfigMap",
-                  "namespace": "example-ns",
-                  "name": "example-datasource-tmpl",
-                  "status": "Synced",
-                  "message": "configmap/example-datasource-tmpl created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "ConfigMap",
-                  "namespace": "example-ns",
-                  "name": "example-config",
-                  "status": "Synced",
-                  "message": "configmap/example-config created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "rbac.authorization.k8s.io",
-                  "version": "v1",
-                  "kind": "ClusterRoleBinding",
-                  "namespace": "example-ns",
-                  "name": "example-auth-delegator",
-                  "status": "Synced",
-                  "message": "clusterrolebinding.rbac.authorization.k8s.io/example-auth-delegator reconciled. reconciliation required create\n\tmissing subjects added:\n\t\t{Kind:ServiceAccount APIGroup: Name:example Namespace:example-ns}. clusterrolebinding.rbac.authorization.k8s.io/example-auth-delegator configured. Warning: resource clusterrolebindings/example-auth-delegator is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by  apply.  apply should only be used on resources created declaratively by either  create --save-config or  apply. The missing annotation will be patched automatically.",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "Service",
-                  "namespace": "example-ns",
-                  "name": "example-kube-rbac-proxy",
-                  "status": "Synced",
-                  "message": "service/example-kube-rbac-proxy created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "Service",
-                  "namespace": "example-ns",
-                  "name": "example-oauth-proxy",
-                  "status": "Synced",
-                  "message": "service/example-oauth-proxy created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "",
-                  "version": "v1",
-                  "kind": "Service",
-                  "namespace": "example-ns",
-                  "name": "example-http",
-                  "status": "Synced",
-                  "message": "service/example-http created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "apps",
-                  "version": "v1",
-                  "kind": "StatefulSet",
-                  "namespace": "example-ns",
-                  "name": "example",
-                  "status": "Synced",
-                  "message": "statefulset.apps/example created",
-                  "hookPhase": "Running",
-                  "syncPhase": "Sync"
-                },
-                {
-                  "group": "external-secrets.io",
-                  "version": "v1beta1",
-                  "kind": "ExternalSecret",
-                  "namespace": "example-ns",
-                  "name": "example-secret",
-                  "status": "SyncFailed",
-                  "message": "resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/3358522048\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first",
-                  "hookPhase": "Failed",
-                  "syncPhase": "Sync"
-                }
-              ],
-              "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
-              "source": {
-                "repoURL": "https://git/org/repo",
-                "path": "components/example",
-                "targetRevision": "main"
-              }
-            },
-            "startedAt": "2025-08-07T13:48:00Z",
-            "finishedAt": "2025-08-07T13:48:06Z",
-            "retryCount": 1
-          },
-          "sourceType": "Kustomize",
-          "summary": {
-            "images": [
-              "mirror.gcr.io/grafana/example:2.9.9"
-            ]
-          },
-          "controllerNamespace": "argocd",
-          "sourceHydrator": {}
-        },
-        "operation": {
-          "sync": {
-            "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
+        "project": "default",
+        "syncPolicy": {
+          "automated": {
             "prune": true,
-            "syncOptions": [
-              "CreateNamespace=true",
-              "PruneLast=true"
-            ]
+            "selfHeal": true
           },
-          "initiatedBy": {
-            "automated": true
-          },
+          "syncOptions": [
+            "CreateNamespace=true",
+            "PruneLast=true"
+          ],
           "retry": {
             "limit": 50,
             "backoff": {
@@ -314,7 +35,285 @@
             }
           }
         }
+      },
+      "status": {
+        "resources": [
+          {
+            "version": "v1",
+            "kind": "ConfigMap",
+            "namespace": "example-ns",
+            "name": "example-config",
+            "status": "Synced"
+          },
+          {
+            "version": "v1",
+            "kind": "ConfigMap",
+            "namespace": "example-ns",
+            "name": "example-datasource-tmpl",
+            "status": "Synced"
+          },
+          {
+            "version": "v1",
+            "kind": "Service",
+            "namespace": "example-ns",
+            "name": "example-http",
+            "status": "Synced",
+            "health": {
+              "status": "Healthy"
+            }
+          },
+          {
+            "version": "v1",
+            "kind": "Service",
+            "namespace": "example-ns",
+            "name": "example-kube-rbac-proxy",
+            "status": "Synced",
+            "health": {
+              "status": "Healthy"
+            }
+          },
+          {
+            "version": "v1",
+            "kind": "Service",
+            "namespace": "example-ns",
+            "name": "example-oauth-proxy",
+            "status": "Synced",
+            "health": {
+              "status": "Healthy"
+            }
+          },
+          {
+            "version": "v1",
+            "kind": "ServiceAccount",
+            "namespace": "example-ns",
+            "name": "example",
+            "status": "Synced"
+          },
+          {
+            "group": "apps",
+            "version": "v1",
+            "kind": "StatefulSet",
+            "namespace": "example-ns",
+            "name": "example",
+            "status": "Synced",
+            "health": {
+              "status": "Progressing",
+              "message": "Waiting for 1 pods to be ready..."
+            }
+          },
+          {
+            "group": "external-secrets.io",
+            "version": "v1beta1",
+            "kind": "ExternalSecret",
+            "namespace": "example-ns",
+            "name": "example-secret",
+            "status": "OutOfSync",
+            "health": {
+              "status": "Missing"
+            }
+          },
+          {
+            "group": "rbac.authorization.k8s.io",
+            "version": "v1",
+            "kind": "ClusterRoleBinding",
+            "name": "example-auth-delegator",
+            "status": "Synced"
+          }
+        ],
+        "sync": {
+          "status": "OutOfSync",
+          "comparedTo": {
+            "source": {
+              "repoURL": "https://git/org/repo",
+              "path": "components/example",
+              "targetRevision": "main"
+            },
+            "destination": {
+              "server": "https://kubernetes.default.svc",
+              "namespace": "example-ns"
+            }
+          },
+          "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04"
+        },
+        "health": {
+          "status": "Progressing",
+          "lastTransitionTime": "2025-08-07T13:48:04Z"
+        },
+        "reconciledAt": "2025-08-07T13:48:00Z",
+        "operationState": {
+          "operation": {
+            "sync": {
+              "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
+              "prune": true,
+              "syncOptions": [
+                "CreateNamespace=true",
+                "PruneLast=true"
+              ]
+            },
+            "initiatedBy": {
+              "automated": true
+            },
+            "retry": {
+              "limit": 50,
+              "backoff": {
+                "duration": "15s"
+              }
+            }
+          },
+          "phase": "Running",
+          "message": "one or more objects failed to apply, reason: resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/1168318049\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first,resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/3358522048\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first. Retrying attempt #1 at 1:48PM.",
+          "syncResult": {
+            "resources": [
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "Namespace",
+                "namespace": "",
+                "name": "example-ns",
+                "status": "Synced",
+                "message": "namespace/example-ns created",
+                "hookPhase": "Running",
+                "syncPhase": "PreSync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "ServiceAccount",
+                "namespace": "example-ns",
+                "name": "example",
+                "status": "Synced",
+                "message": "serviceaccount/example created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "ConfigMap",
+                "namespace": "example-ns",
+                "name": "example-datasource-tmpl",
+                "status": "Synced",
+                "message": "configmap/example-datasource-tmpl created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "ConfigMap",
+                "namespace": "example-ns",
+                "name": "example-config",
+                "status": "Synced",
+                "message": "configmap/example-config created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "rbac.authorization.k8s.io",
+                "version": "v1",
+                "kind": "ClusterRoleBinding",
+                "namespace": "example-ns",
+                "name": "example-auth-delegator",
+                "status": "Synced",
+                "message": "clusterrolebinding.rbac.authorization.k8s.io/example-auth-delegator reconciled. reconciliation required create\n\tmissing subjects added:\n\t\t{Kind:ServiceAccount APIGroup: Name:example Namespace:example-ns}. clusterrolebinding.rbac.authorization.k8s.io/example-auth-delegator configured. Warning: resource clusterrolebindings/example-auth-delegator is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by  apply.  apply should only be used on resources created declaratively by either  create --save-config or  apply. The missing annotation will be patched automatically.",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "example-ns",
+                "name": "example-kube-rbac-proxy",
+                "status": "Synced",
+                "message": "service/example-kube-rbac-proxy created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "example-ns",
+                "name": "example-oauth-proxy",
+                "status": "Synced",
+                "message": "service/example-oauth-proxy created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "",
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "example-ns",
+                "name": "example-http",
+                "status": "Synced",
+                "message": "service/example-http created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "apps",
+                "version": "v1",
+                "kind": "StatefulSet",
+                "namespace": "example-ns",
+                "name": "example",
+                "status": "Synced",
+                "message": "statefulset.apps/example created",
+                "hookPhase": "Running",
+                "syncPhase": "Sync"
+              },
+              {
+                "group": "external-secrets.io",
+                "version": "v1beta1",
+                "kind": "ExternalSecret",
+                "namespace": "example-ns",
+                "name": "example-secret",
+                "status": "SyncFailed",
+                "message": "resource mapping not found for name: \"example-secret\" namespace: \"example-ns\" from \"/dev/shm/3358522048\": no matches for kind \"ExternalSecret\" in version \"external-secrets.io/v1beta1\"\nensure CRDs are installed first",
+                "hookPhase": "Failed",
+                "syncPhase": "Sync"
+              }
+            ],
+            "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
+            "source": {
+              "repoURL": "https://git/org/repo",
+              "path": "components/example",
+              "targetRevision": "main"
+            }
+          },
+          "startedAt": "2025-08-07T13:48:00Z",
+          "finishedAt": "2025-08-07T13:48:06Z",
+          "retryCount": 1
+        },
+        "sourceType": "Kustomize",
+        "summary": {
+          "images": [
+            "mirror.gcr.io/grafana/example:2.9.9"
+          ]
+        },
+        "controllerNamespace": "argocd",
+        "sourceHydrator": {}
+      },
+      "operation": {
+        "sync": {
+          "revision": "f92d9eabe6aec90f46eec5d8eb79fcdcaef6aa04",
+          "prune": true,
+          "syncOptions": [
+            "CreateNamespace=true",
+            "PruneLast=true"
+          ]
+        },
+        "initiatedBy": {
+          "automated": true
+        },
+        "retry": {
+          "limit": 50,
+          "backoff": {
+            "duration": "15s"
+          }
+        }
       }
-    ]
-  }
-  
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "resourceVersion": "159091"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "an-healthy-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Healthy"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "another-healthy-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Healthy"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "a-degraded-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Degraded"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "another-degraded-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Degraded"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "a-progressing-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Progressing"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "another-progressing-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Progressing"
+        }
+      }
+    }
+  ]
+}

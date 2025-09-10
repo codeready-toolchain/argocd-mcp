@@ -8,7 +8,7 @@ import (
 	"log/slog"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
-	"github.com/argoproj/gitops-engine/pkg/sync/common"
+	"github.com/argoproj/gitops-engine/pkg/health"
 	mcpapi "github.com/xcoulon/converse-mcp/pkg/api"
 	mcpserver "github.com/xcoulon/converse-mcp/pkg/server"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +17,7 @@ import (
 var UnhealthyResourcesPrompt = mcpapi.NewPrompt("argocd-unhealthy-application-resources").
 	WithArgument("name", "the name of the name to get details of", "", true)
 
-func UnhealthyResourcesPromptHandle(cl HTTPClient) mcpserver.PromptHandleFunc {
+func UnhealthyApplicationResourcesPromptHandle(cl HTTPClient) mcpserver.PromptHandleFunc {
 	return func(ctx context.Context, logger *slog.Logger, params mcpapi.GetPromptRequestParams) (any, error) {
 		app, ok := params.Arguments["name"]
 		if !ok {
@@ -50,14 +50,48 @@ func UnhealthyResourcesPromptHandle(cl HTTPClient) mcpserver.PromptHandleFunc {
 	}
 }
 
-var UnhealthyResourcesTool = mcpapi.NewTool("unhealthyResources").
-	WithTitle("get unhealthy resources of an Argo CD Application").
+var UnhealthyApplicationResourcesTool = mcpapi.NewTool("unhealthyApplicationResources").
+	WithTitle("list unhealthy resources of a given Argo CD Application").
 	WithDestructiveHint(false).
 	WithReadOnlyHint(true).
 	WithInputProperty("name", mcpapi.String, "the name of the Argo CD Application to get details of", true)
-	// WithOutputProperty("resources", mcpapi.Array, "the unhealthy resources of the Argo CD Application", true)
 
 func UnhealthyResourcesToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
+	return func(ctx context.Context, logger *slog.Logger, params mcpapi.CallToolRequestParams) (any, error) {
+		app, ok := params.Arguments["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("'name' not found in arguments or not a string")
+		}
+		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, app)
+		if err != nil {
+			return nil, err
+		}
+		unhealthyResourcesText, err := json.Marshal(unhealthyResources)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
+		}
+		unhealthyResourcesStructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unhealthyResources)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
+		}
+		result := &mcpapi.CallToolResult{
+			Content: []mcpapi.CallToolResultContentElem{
+				mcpapi.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
+					Type: "text",
+					Text: string(unhealthyResourcesText),
+				},
+			},
+			StructuredContent: unhealthyResourcesStructured,
+			IsError:           mcpapi.BoolPtr(false),
+		}
+		if logger.Enabled(ctx, slog.LevelDebug) {
+			logger.DebugContext(ctx, "returned 'tools/call' response", "content", result)
+		}
+		return result, nil
+	}
+}
+
+func UnhealthyApplicationResourcesToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
 	return func(ctx context.Context, logger *slog.Logger, params mcpapi.CallToolRequestParams) (any, error) {
 		app, ok := params.Arguments["name"].(string)
 		if !ok {
@@ -112,10 +146,10 @@ func getUnhealthyResources(ctx context.Context, _ *slog.Logger, cl HTTPClient, n
 	app := apps.Items[0]
 	// retain unhealthy resources from the name status
 	unhealthyResources := &UnhealthyResources{
-		Resources: []*argocdv3.ResourceResult{},
+		Resources: []argocdv3.ResourceStatus{},
 	}
-	for _, resource := range app.Status.OperationState.SyncResult.Resources {
-		if resource.Status != common.ResultCodeSynced {
+	for _, resource := range app.Status.Resources {
+		if resource.Health != nil && resource.Health.Status != health.HealthStatusHealthy {
 			unhealthyResources.Resources = append(unhealthyResources.Resources, resource)
 		}
 	}
@@ -126,5 +160,5 @@ func getUnhealthyResources(ctx context.Context, _ *slog.Logger, cl HTTPClient, n
 // - requires a pointer to a struct
 // - does not support anonymous structs
 type UnhealthyResources struct {
-	Resources []*argocdv3.ResourceResult `json:"resources"`
+	Resources []argocdv3.ResourceStatus `json:"resources"`
 }
