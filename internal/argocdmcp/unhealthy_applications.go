@@ -20,14 +20,14 @@ var UnhealthyApplicationsTool = mcpapi.NewTool("unhealthyApplications").
 	WithDestructiveHint(false).
 	WithReadOnlyHint(true)
 
-func UnhealthyApplicationsToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
-	return func(ctx context.Context, logger *slog.Logger, _ mcpapi.CallToolRequestParams) (any, error) {
+func UnhealthyApplicationsToolHandle(logger *slog.Logger, cl HTTPClient) mcpserver.ToolHandleFunc {
+	return func(ctx context.Context, _ mcpapi.CallToolRequestParams) (mcpapi.CallToolResult, error) {
 		apps, err := listApplications(ctx, logger, cl)
 		if err != nil {
-			return nil, err
+			return mcpapi.CallToolResult{}, err
 		}
 		unhealthyApps := append(apps[argocdhealth.HealthStatusDegraded], apps[argocdhealth.HealthStatusProgressing]...)
-		result := &mcpapi.CallToolResult{
+		result := mcpapi.CallToolResult{
 			Content: []mcpapi.CallToolResultContentElem{
 				mcpapi.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
 					Type: "text",
