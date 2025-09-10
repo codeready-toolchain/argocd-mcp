@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"os"
 )
 
 type HTTPClient interface {
@@ -41,6 +40,5 @@ func (b httpClient) GetWithContext(ctx context.Context, path string) (*http.Resp
 		return nil, err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", b.token))
-	os.Stderr.WriteString(req.Header.Get("Authorization"))
 	return cl.Do(req)
 }

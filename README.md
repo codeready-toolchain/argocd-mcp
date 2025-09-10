@@ -2,9 +2,14 @@
 
 Argo CD MCP is a Model Context Protocol Server to converse with Argo CD from a UI such as Anthropic's Claude or Block's Goose
 
+## Available Prompts
+
+1. `argocd-unhealthy-application-resources`: list the Unhealthy (`Degraded` and `Progressing`) Applications in Argo CD
+
 ## Available Tools
 
-1. `unhealthyResources`: get unhealthy resources of an Argo CD Application
+1. `unhealthyApplications`: list the Unhealthy (`Degraded` and `Progressing`) Applications in Argo CD
+2. `unhealthyApplicationResources`: list unhealthy resources of a given Argo CD Application
 
 Example:
 
