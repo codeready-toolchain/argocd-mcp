@@ -12,10 +12,10 @@ import (
 var StdioChannel = channel.Line(os.Stdin, os.Stdout)
 
 func NewServer(logger *slog.Logger, cl HTTPClient) *jrpc2.Server {
-	mux := mcpserver.NewMux("argocd-mcp", "0.1", logger).
-		WithPrompt(UnhealthyResourcesPrompt, UnhealthyApplicationResourcesPromptHandle(cl)).
-		WithTool(UnhealthyApplicationsTool, UnhealthyApplicationsToolHandle(cl)).
-		WithTool(UnhealthyApplicationResourcesTool, UnhealthyApplicationResourcesToolHandle(cl)).
+	mux := mcpserver.NewMux("argocd-mcp", "0.1").
+		WithPrompt(UnhealthyResourcesPrompt, UnhealthyApplicationResourcesPromptHandle(logger, cl)).
+		WithTool(UnhealthyApplicationsTool, UnhealthyApplicationsToolHandle(logger, cl)).
+		WithTool(UnhealthyApplicationResourcesTool, UnhealthyApplicationResourcesToolHandle(logger, cl)).
 		Build()
 	return mcpserver.NewStdioServer(mux, logger)
 }

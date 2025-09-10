@@ -17,21 +17,21 @@ import (
 var UnhealthyResourcesPrompt = mcpapi.NewPrompt("argocd-unhealthy-application-resources").
 	WithArgument("name", "the name of the name to get details of", "", true)
 
-func UnhealthyApplicationResourcesPromptHandle(cl HTTPClient) mcpserver.PromptHandleFunc {
-	return func(ctx context.Context, logger *slog.Logger, params mcpapi.GetPromptRequestParams) (any, error) {
+func UnhealthyApplicationResourcesPromptHandle(logger *slog.Logger, cl HTTPClient) mcpserver.PromptHandleFunc {
+	return func(ctx context.Context, params mcpapi.GetPromptRequestParams) (mcpapi.GetPromptResult, error) {
 		app, ok := params.Arguments["name"]
 		if !ok {
-			return nil, fmt.Errorf("'name' not found in arguments or not a string")
+			return mcpapi.GetPromptResult{}, fmt.Errorf("'name' not found in arguments or not a string")
 		}
 		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, app)
 		if err != nil {
-			return nil, err
+			return mcpapi.GetPromptResult{}, err
 		}
 		unhealthyResourcesText, err := json.Marshal(unhealthyResources)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert unhealthy resources to text: %w", err)
+			return mcpapi.GetPromptResult{}, fmt.Errorf("failed to convert unhealthy resources to text: %w", err)
 		}
-		result := &mcpapi.GetPromptResult{
+		result := mcpapi.GetPromptResult{
 			Description: mcpapi.StringPtr("The unhealthy resources of the Argo CD Application prompt"),
 			Messages: []mcpapi.PromptMessage{
 				{
@@ -56,25 +56,25 @@ var UnhealthyApplicationResourcesTool = mcpapi.NewTool("unhealthyApplicationReso
 	WithReadOnlyHint(true).
 	WithInputProperty("name", mcpapi.String, "the name of the Argo CD Application to get details of", true)
 
-func UnhealthyResourcesToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
-	return func(ctx context.Context, logger *slog.Logger, params mcpapi.CallToolRequestParams) (any, error) {
+func UnhealthyResourcesToolHandle(logger *slog.Logger, cl HTTPClient) mcpserver.ToolHandleFunc {
+	return func(ctx context.Context, params mcpapi.CallToolRequestParams) (mcpapi.CallToolResult, error) {
 		app, ok := params.Arguments["name"].(string)
 		if !ok {
-			return nil, fmt.Errorf("'name' not found in arguments or not a string")
+			return mcpapi.CallToolResult{}, fmt.Errorf("'name' not found in arguments or not a string")
 		}
 		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, app)
 		if err != nil {
-			return nil, err
+			return mcpapi.CallToolResult{}, err
 		}
 		unhealthyResourcesText, err := json.Marshal(unhealthyResources)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
+			return mcpapi.CallToolResult{}, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
 		}
 		unhealthyResourcesStructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unhealthyResources)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
+			return mcpapi.CallToolResult{}, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
 		}
-		result := &mcpapi.CallToolResult{
+		result := mcpapi.CallToolResult{
 			Content: []mcpapi.CallToolResultContentElem{
 				mcpapi.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
 					Type: "text",
@@ -91,25 +91,25 @@ func UnhealthyResourcesToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
 	}
 }
 
-func UnhealthyApplicationResourcesToolHandle(cl HTTPClient) mcpserver.ToolHandleFunc {
-	return func(ctx context.Context, logger *slog.Logger, params mcpapi.CallToolRequestParams) (any, error) {
+func UnhealthyApplicationResourcesToolHandle(logger *slog.Logger, cl HTTPClient) mcpserver.ToolHandleFunc {
+	return func(ctx context.Context, params mcpapi.CallToolRequestParams) (mcpapi.CallToolResult, error) {
 		app, ok := params.Arguments["name"].(string)
 		if !ok {
-			return nil, fmt.Errorf("'name' not found in arguments or not a string")
+			return mcpapi.CallToolResult{}, fmt.Errorf("'name' not found in arguments or not a string")
 		}
 		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, app)
 		if err != nil {
-			return nil, err
+			return mcpapi.CallToolResult{}, err
 		}
 		unhealthyResourcesText, err := json.Marshal(unhealthyResources)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
+			return mcpapi.CallToolResult{}, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
 		}
 		unhealthyResourcesStructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unhealthyResources)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
+			return mcpapi.CallToolResult{}, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
 		}
-		result := &mcpapi.CallToolResult{
+		result := mcpapi.CallToolResult{
 			Content: []mcpapi.CallToolResultContentElem{
 				mcpapi.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
 					Type: "text",
