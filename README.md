@@ -21,7 +21,7 @@ Example:
 Requires [Go 1.24 (or higher)](https://go.dev/doc/install) and [Task](https://taskfile.dev/)
 
 ```
-task build
+task install
 ```
 
 ## Testing
