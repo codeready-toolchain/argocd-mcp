@@ -41,8 +41,8 @@ Edit your `~/.cursor/mcp.json` file with the following contents:
     "argocd-mcp": {
       "command": "<path/to/argocd-mcp>",
       "args": [
-        "--argocd-token-file",
-        "<path/to/token-file>",
+        "--argocd-token",
+        "<token>",
         "--argocd-url",
         "<url>",
         "--insecure",
@@ -58,7 +58,7 @@ Edit your `~/.cursor/mcp.json` file with the following contents:
 [Install Goose](https://block.github.io/goose/docs/getting-started/installation) then [add the MCP server](https://block.github.io/goose/docs/getting-started/using-extensions#mcp-servers) with the following command line to run:
 
 ```
-<path/to/argocd-mcp> --argocd-token-file <path/to/token-file> --argocd-url <url> --insecure <true|false>
+<path/to/argocd-mcp> --argocd-token <token> --argocd-url <url> --insecure <true|false>
 ```
 
 ## Testing with Claude Desktop App
@@ -76,8 +76,8 @@ and add the following MCP server definition:
         "argocd-mcp": {
             "command": "<path/to/argocd-mcp>",
             "args": [
-                "--argocd-token-file"
-                "<path/to/token-file>",
+                "--argocd-token"
+                "<token>",
                 "--argocd-url",
                 "<url>",
                 "--insecure"
