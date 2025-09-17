@@ -7,9 +7,9 @@ require (
 	github.com/argoproj/gitops-engine v0.7.1-0.20250520182409-89c110b5952e
 	github.com/creachadair/jrpc2 v1.3.2
 	github.com/h2non/gock v1.2.0
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.10.0
-	github.com/xcoulon/converse-mcp v0.0.0-20250910153853-3c001dceb911
+	github.com/xcoulon/converse-mcp v0.0.0-20250917083736-834e14f4b5cb
 	k8s.io/apimachinery v0.33.0
 )
 
@@ -116,7 +116,7 @@ require (
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
-	github.com/spf13/cobra v1.9.1 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
