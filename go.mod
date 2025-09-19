@@ -8,7 +8,7 @@ require (
 	github.com/h2non/gock v1.2.0
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.10.0
-	github.com/xcoulon/converse-mcp v0.0.0-20250919071336-404c5dd2f998
+	github.com/xcoulon/converse-mcp v0.0.0-20250919083750-e256976d63f2
 	k8s.io/apimachinery v0.33.0
 )
 
