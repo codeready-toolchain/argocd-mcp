@@ -13,3 +13,7 @@ tasks:
   install:
     cmds:
       - go build -o $GOPATH/bin/argocd-mcp main.go
+
+  build-image:
+    cmds:
+      - podman build -t argocd-mcp:latest . -f Containerfile.yaml
