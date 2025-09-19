@@ -7,14 +7,13 @@ import (
 	"github.com/xcoulon/argocd-mcp/internal/argocdmcp"
 
 	"github.com/spf13/cobra"
-	mcpchannel "github.com/xcoulon/converse-mcp/pkg/channel"
 	mcpserver "github.com/xcoulon/converse-mcp/pkg/server"
 )
 
 // stdioCmd represents the stdio command
-var stdioCmd = &cobra.Command{
-	Use:   "stdio",
-	Short: "Start the Argo CD MCP server using stdio",
+var httpCmd = &cobra.Command{
+	Use:   "http",
+	Short: "Start the Argo CD MCP server using Streamable HTTP",
 	Run: func(cmd *cobra.Command, _ []string) {
 		lvl := new(slog.LevelVar)
 		lvl.Set(slog.LevelInfo)
@@ -25,20 +24,21 @@ var stdioCmd = &cobra.Command{
 			lvl.Set(slog.LevelDebug)
 			logger.Debug("debug mode enabled")
 		}
-		logger.Info("starting Argo CD MCP server using stdio", "url", url, "token", token[:10]+"...", "insecure", insecure, "debug", debug)
+		logger.Info("starting Argo CD MCP server using streamable HTTP", "url", url, "token", token[:10]+"...", "insecure", insecure, "debug", debug, "port", port)
 		cl := argocdmcp.NewHTTPClient(url, token, insecure)
 		router := argocdmcp.NewRouter(logger, cl)
-		srv := mcpserver.NewStdioServer(logger, router)
-		srv.Start(mcpchannel.StdioChannel)
+		srv := mcpserver.NewStreamableHTTPServer(logger, router, port)
+		srv.Start()
 		if err := srv.Wait(); err != nil {
 			logger.Error("failed to wait for server", "error", err.Error())
 			os.Exit(1)
 		}
-		logger.Info("bye!")
 	},
 }
 
+var port int
+
 func init() {
-	rootCmd.AddCommand(stdioCmd)
-	stdioCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(httpCmd)
+	httpCmd.Flags().IntVarP(&port, "port", "p", 8080, "Port to listen on")
 }

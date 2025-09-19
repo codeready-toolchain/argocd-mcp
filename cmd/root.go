@@ -26,9 +26,9 @@ var insecure bool
 var debug bool
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&url, "argocd-url", "", "URL of the Argo CD server to query")
-	rootCmd.PersistentFlags().StringVar(&token, "argocd-token", "", "The token to query Argo CD (will be expanded if specified as $ENV_VAR)")
-	rootCmd.PersistentFlags().StringVar(&insecureStr, "insecure", "false", "Allow insecure TLS connections")
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode")
-	rootCmd.PersistentFlags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&url, "argocd-url", "", "URL of the Argo CD server to query (required)")
+	rootCmd.PersistentFlags().StringVar(&token, "argocd-token", "", "The token to include in the Authorization header (required)")
+	rootCmd.PersistentFlags().StringVar(&insecureStr, "insecure", "false", "Allow insecure TLS connections to the Argo CD server (default: false)")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode (default: false)")
+	rootCmd.PersistentFlags().BoolP("toggle", "t", false, "Help message for toggle (default: false)")
 }
