@@ -5,19 +5,18 @@ import (
 	_ "embed"
 	"encoding/json"
 	"log/slog"
+	"net/http"
+	"net/http/cookiejar"
+	"net/http/httptest"
+	"net/url"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/xcoulon/argocd-mcp/internal/argocdmcp"
 
-	mcpapi "github.com/xcoulon/converse-mcp/pkg/api"
-	mcpchannel "github.com/xcoulon/converse-mcp/pkg/channel"
-	mcpclient "github.com/xcoulon/converse-mcp/pkg/client"
-	mcpserver "github.com/xcoulon/converse-mcp/pkg/server"
-
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	"github.com/h2non/gock"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,119 +30,122 @@ var applicationsStr string
 
 func TestServer(t *testing.T) {
 	// given
-	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-
+	ctx := context.Background()
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 	// Argo CD client (to be intercepted by gock)
-	argocdCl := argocdmcp.NewHTTPClient("https://argocd-server", "secure-token", false)
-
-	router := argocdmcp.NewRouter(logger, argocdCl)
-
-	// stdio server
-	c2s, s2c := mcpchannel.Direct()
-	stdioCl := mcpclient.NewFromChannel(c2s)
-	stdioSrv := mcpserver.NewStdioServer(logger, router)
-	stdioSrv.Start(s2c)
-	defer func() {
-		stdioSrv.Stop()
-		if err := stdioCl.Close(); err != nil {
-			t.Errorf("failed to close client: %v", err)
-		}
-	}()
-
-	// streamable http server
-	httpSrv := mcpserver.NewStreamableHTTPServer(logger, router, 8080)
-	httpSrv.Start()
-	httpCl := mcpclient.NewFromURL(httpSrv.Addr())
-	defer func() {
-		if err := httpSrv.Stop(); err != nil {
-			t.Errorf("failed to stop http server: %v", err)
-		}
-		if err := httpCl.Close(); err != nil {
-			t.Errorf("failed to close client: %v", err)
-		}
-	}()
+	argoCl := argocdmcp.NewArgoCDClient("https://argocd-server", "secure-token", false)
 
 	testdata := []struct {
 		name string
-		cl   *mcpclient.Client
+		init func(*testing.T) (*mcp.ClientSession, func())
 	}{
 		{
 			name: "stdio",
-			cl:   stdioCl,
+			init: func(t *testing.T) (*mcp.ClientSession, func()) {
+				mcpSrv := argocdmcp.NewServer(logger, argoCl)
+				// Create a client.
+				cl := mcp.NewClient(&mcp.Implementation{Name: "client", Version: "v0.0.1"}, nil)
+				// Connect the server and client.
+				t1, t2 := mcp.NewInMemoryTransports()
+				_, err := mcpSrv.Connect(ctx, t1, nil)
+				require.NoError(t, err)
+				session, err := cl.Connect(ctx, t2, nil)
+				require.NoError(t, err)
+				return session, func() {
+					session.Close()
+				}
+			},
 		},
 		{
 			name: "http",
-			cl:   httpCl,
+			init: func(t *testing.T) (*mcp.ClientSession, func()) {
+				var err error
+				mcpSrv := argocdmcp.NewServer(logger, argoCl)
+				handler := mcp.NewStreamableHTTPHandler(
+					func(_ *http.Request) *mcp.Server {
+						return mcpSrv
+					},
+					&mcp.StreamableHTTPOptions{},
+				)
+				httpServer := httptest.NewServer(handler)
+				gock.EnableNetworking() // so we can call the MCP server through the HTTP client
+				gock.NetworkingFilter(func(req *http.Request) bool {
+					return req.URL.String() == httpServer.URL // allow network calls to the HTTP/MCP server (if any)
+				})
+				httpSession, err := newHTTPSession(ctx, httpServer.URL)
+				require.NoError(t, err)
+				return httpSession,
+					func() {
+						httpSession.Close()
+						httpServer.Close()
+						gock.DisableNetworkingFilters()
+					}
+			},
 		},
 	}
 
-	for _, test := range testdata {
-		t.Run(test.name, func(t *testing.T) {
+	for _, td := range testdata {
+		t.Run(td.name, func(t *testing.T) {
 			t.Run("call/unhealthyApplications", func(t *testing.T) {
-				// given
-				gock.Intercept()
 				gock.New("https://argocd-server").
 					Get("/api/v1/applications").
 					MatchHeader("Authorization", "Bearer secure-token").
 					Reply(200).
 					BodyString(applicationsStr)
-				gock.Observe(gock.DumpRequest)
-				defer gock.Off() // Flush pending mocks after test execution
+				defer gock.Off() // disable HTTP interceptor after test execution
+				session, closeFunc := td.init(t)
+				defer closeFunc()
 
 				// when
-				resp, err := stdioCl.Call(context.Background(), "tools/call", mcpapi.CallToolRequestParams{
+				result, err := session.CallTool(context.Background(), &mcp.CallToolParams{
 					Name: "unhealthyApplications",
 				})
 
 				// then
 				require.NoError(t, err)
-				callResult := &mcpapi.CallToolResult{}
-				err = json.Unmarshal([]byte(resp.ResultString()), callResult)
+				// expected content
+				expectedContent := map[string]any{
+					"degraded":    []any{"a-degraded-application", "another-degraded-application"},
+					"progressing": []any{"a-progressing-application", "another-progressing-application"},
+				}
+				expectedContentText, err := json.Marshal(expectedContent)
 				require.NoError(t, err)
-
 				// verify the `text` result
-				require.IsType(t, map[string]any{}, callResult.Content[0])
-				actualTextContent := mcpapi.TextContent{}
-				err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.Content[0].(map[string]any), &actualTextContent)
-				require.NoError(t, err)
-				assert.ElementsMatch(t, []string{"a-progressing-application", "another-progressing-application", "a-degraded-application", "another-degraded-application"}, strings.Split(actualTextContent.Text, ", "))
-
+				resultContent, ok := result.Content[0].(*mcp.TextContent)
+				require.True(t, ok)
+				assert.JSONEq(t, string(expectedContentText), resultContent.Text)
 				// verify the `structured` content
-				require.IsType(t, map[string]any{}, callResult.StructuredContent)
-				t.Logf("callResult.StructuredContent: %v", callResult.StructuredContent)
+				require.IsType(t, map[string]any{}, result.StructuredContent)
 				actualStructuredContent := map[string]any{}
-				err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.StructuredContent, &actualStructuredContent)
+				err = runtime.DefaultUnstructuredConverter.FromUnstructured(result.StructuredContent.(map[string]any), &actualStructuredContent)
 				require.NoError(t, err)
-				assert.Equal(t,
-					map[string]any{
-						"progressing": []any{"a-progressing-application", "another-progressing-application"},
-						"degraded":    []any{"a-degraded-application", "another-degraded-application"}},
-					actualStructuredContent)
+				assert.Equal(t, expectedContent, actualStructuredContent)
 			})
+
 			t.Run("call/unhealthyApplicationResources", func(t *testing.T) {
 				// given
-				gock.Intercept()
 				gock.New("https://argocd-server").
 					Get("/api/v1/applications").
 					MatchParam("name", "example").
 					MatchHeader("Authorization", "Bearer secure-token").
 					Reply(200).
 					BodyString(exampleApplicationsStr)
-				gock.Observe(gock.DumpRequest)
-				defer gock.Off() // Flush pending mocks after test execution
+				defer gock.Off() // disable HTTP interceptor after test execution
+				session, closeFunc := td.init(t)
+				defer closeFunc()
 
 				// when
-				resp, err := stdioCl.Call(context.Background(), "tools/call", mcpapi.CallToolRequestParams{
-					Name:      "unhealthyApplicationResources",
-					Arguments: map[string]any{"name": "example"},
+				result, err := session.CallTool(context.Background(), &mcp.CallToolParams{
+					Name: "unhealthyApplicationResources",
+					Arguments: map[string]any{
+						"name": "example",
+					},
 				})
 
 				// then
 				require.NoError(t, err)
-				callResult := &mcpapi.CallToolResult{}
-				err = json.Unmarshal([]byte(resp.ResultString()), callResult)
-				require.NoError(t, err)
-
 				expectedContent := argocdmcp.UnhealthyResources{
 					Resources: []argocdv3.ResourceStatus{
 						{
@@ -175,19 +177,45 @@ func TestServer(t *testing.T) {
 				require.NoError(t, err)
 
 				// verify the `text` result
-				require.IsType(t, map[string]any{}, callResult.Content[0])
-				actualTextContent := mcpapi.TextContent{}
-				err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.Content[0].(map[string]any), &actualTextContent)
-				require.NoError(t, err)
-				assert.JSONEq(t, string(expectedResourcesText), actualTextContent.Text)
+				resultContent, ok := result.Content[0].(*mcp.TextContent)
+				require.True(t, ok)
+				assert.JSONEq(t, string(expectedResourcesText), resultContent.Text)
 
 				// verify the `structured` content
-				require.IsType(t, map[string]any{}, callResult.StructuredContent)
+				require.IsType(t, map[string]any{}, result.StructuredContent)
 				actualStructuredContent := argocdmcp.UnhealthyResources{}
-				err = runtime.DefaultUnstructuredConverter.FromUnstructured(callResult.StructuredContent, &actualStructuredContent)
+				err = runtime.DefaultUnstructuredConverter.FromUnstructured(result.StructuredContent.(map[string]any), &actualStructuredContent)
 				require.NoError(t, err)
 				assert.Equal(t, expectedContent, actualStructuredContent)
 			})
 		})
 	}
+}
+
+func newHTTPSession(ctx context.Context, srvURL string) (*mcp.ClientSession, error) {
+	// Create a client and connect it to the server using our StreamableClientTransport.
+	// Check that all requests honor a custom client.
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
+	u, err := url.Parse(srvURL)
+	if err != nil {
+		return nil, err
+	}
+	jar.SetCookies(u, []*http.Cookie{{Name: "test-cookie", Value: "test-value"}})
+	httpClient := &http.Client{Jar: jar}
+	transport := &mcp.StreamableClientTransport{
+		Endpoint:   srvURL,
+		HTTPClient: httpClient,
+	}
+	client := mcp.NewClient(&mcp.Implementation{
+		Name:    "argocd-mcp-test-client",
+		Version: "0.1",
+	}, &mcp.ClientOptions{
+		CreateMessageHandler: func(context.Context, *mcp.CreateMessageRequest) (*mcp.CreateMessageResult, error) {
+			return &mcp.CreateMessageResult{Model: "aModel", Content: &mcp.TextContent{}}, nil
+		},
+	})
+	return client.Connect(ctx, transport, nil)
 }

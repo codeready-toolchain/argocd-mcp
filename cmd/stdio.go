@@ -1,14 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
 	"github.com/xcoulon/argocd-mcp/internal/argocdmcp"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
-	mcpchannel "github.com/xcoulon/converse-mcp/pkg/channel"
-	mcpserver "github.com/xcoulon/converse-mcp/pkg/server"
 )
 
 // stdioCmd represents the stdio command
@@ -26,12 +26,14 @@ var stdioCmd = &cobra.Command{
 			logger.Debug("debug mode enabled")
 		}
 		logger.Info("starting Argo CD MCP server using stdio", "url", url, "token", token[:10]+"...", "insecure", insecure, "debug", debug)
-		cl := argocdmcp.NewHTTPClient(url, token, insecure)
-		router := argocdmcp.NewRouter(logger, cl)
-		srv := mcpserver.NewStdioServer(logger, router)
-		srv.Start(mcpchannel.StdioChannel)
-		if err := srv.Wait(); err != nil {
-			logger.Error("failed to wait for server", "error", err.Error())
+		cl := argocdmcp.NewArgoCDClient(url, token, insecure)
+		srv := argocdmcp.NewServer(logger, cl)
+		t := &mcp.LoggingTransport{
+			Transport: &mcp.StdioTransport{},
+			Writer:    cmd.ErrOrStderr(),
+		}
+		if err := srv.Run(context.Background(), t); err != nil {
+			logger.Error("failed to serve on stdio", "error", err.Error())
 			os.Exit(1)
 		}
 		logger.Info("bye!")
