@@ -5,10 +5,11 @@ go 1.24.5
 require (
 	github.com/argoproj/argo-cd/v3 v3.0.12
 	github.com/argoproj/gitops-engine v0.7.1-0.20250520182409-89c110b5952e
+	github.com/google/jsonschema-go v0.2.3
 	github.com/h2non/gock v1.2.0
+	github.com/modelcontextprotocol/go-sdk v0.6.0
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.10.0
-	github.com/xcoulon/converse-mcp v0.0.0-20250919083750-e256976d63f2
 	k8s.io/apimachinery v0.33.0
 )
 
@@ -37,8 +38,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/cloudflare/circl v1.6.0 // indirect
-	github.com/creachadair/jrpc2 v1.3.2 // indirect
-	github.com/creachadair/mds v0.25.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -123,6 +122,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
+	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect

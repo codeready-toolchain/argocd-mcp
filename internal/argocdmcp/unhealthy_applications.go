@@ -6,49 +6,41 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"strings"
 
-	mcpapi "github.com/xcoulon/converse-mcp/pkg/api"
-	mcpserver "github.com/xcoulon/converse-mcp/pkg/server"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	argocdhealth "github.com/argoproj/gitops-engine/pkg/health"
 )
 
-var UnhealthyApplicationsTool = mcpapi.NewTool("unhealthyApplications").
-	WithTitle("list the Unhealthy ('Degraded' and 'Progressing') Applications in Argo CD").
-	WithDestructiveHint(false).
-	WithReadOnlyHint(true)
+var UnhealthyApplicationsTool = &mcp.Tool{
+	Name:        "unhealthyApplications",
+	Description: "list the Unhealthy ('Degraded' and 'Progressing') Applications in Argo CD",
+}
 
-func UnhealthyApplicationsToolHandle(logger *slog.Logger, cl HTTPClient) mcpserver.ToolHandleFunc {
-	return func(ctx context.Context, _ mcpapi.CallToolRequestParams) (mcpapi.CallToolResult, error) {
+type UnhealthyApplicationsInput struct {
+}
+
+type UnhealthyApplicationsOutput struct {
+	Degraded    []string `json:"degraded"`
+	Progressing []string `json:"progressing"`
+}
+
+func UnhealthyApplicationsToolHandle(logger *slog.Logger, cl *ArgoCDClient) mcp.ToolHandlerFor[UnhealthyApplicationsInput, UnhealthyApplicationsOutput] {
+	return func(ctx context.Context, _ *mcp.CallToolRequest, _ UnhealthyApplicationsInput) (*mcp.CallToolResult, UnhealthyApplicationsOutput, error) {
 		apps, err := listApplications(ctx, logger, cl)
 		if err != nil {
-			return mcpapi.CallToolResult{}, err
+			return nil, UnhealthyApplicationsOutput{}, err
 		}
-		unhealthyApps := append(apps[argocdhealth.HealthStatusDegraded], apps[argocdhealth.HealthStatusProgressing]...)
-		result := mcpapi.CallToolResult{
-			Content: []mcpapi.CallToolResultContentElem{
-				mcpapi.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
-					Type: "text",
-					Text: strings.Join(unhealthyApps, ", "),
-				},
-			},
-			StructuredContent: map[string]any{
-				"degraded":    apps[argocdhealth.HealthStatusDegraded],
-				"progressing": apps[argocdhealth.HealthStatusProgressing],
-			},
-			IsError: mcpapi.BoolPtr(false),
-		}
-		if logger.Enabled(ctx, slog.LevelDebug) {
-			logger.DebugContext(ctx, "returned 'tools/call' response", "content", result)
-		}
-		return result, nil
+		return nil, UnhealthyApplicationsOutput{
+			Degraded:    apps[argocdhealth.HealthStatusDegraded],
+			Progressing: apps[argocdhealth.HealthStatusProgressing],
+		}, nil
 	}
 }
 
 // returns the name of the applications grouped by their health status
-func listApplications(ctx context.Context, _ *slog.Logger, cl HTTPClient) (map[argocdhealth.HealthStatusCode][]string, error) {
+func listApplications(ctx context.Context, _ *slog.Logger, cl *ArgoCDClient) (map[argocdhealth.HealthStatusCode][]string, error) {
 	resp, err := cl.GetWithContext(ctx, "api/v1/applications")
 	if err != nil {
 		return nil, err
