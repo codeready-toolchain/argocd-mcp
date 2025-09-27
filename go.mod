@@ -1,9 +1,9 @@
 module github.com/xcoulon/argocd-mcp
 
-go 1.24.5
+go 1.24.6
 
 require (
-	github.com/argoproj/argo-cd/v3 v3.0.12
+	github.com/argoproj/argo-cd/v3 v3.0.14
 	github.com/argoproj/gitops-engine v0.7.1-0.20250520182409-89c110b5952e
 	github.com/google/jsonschema-go v0.2.3
 	github.com/h2non/gock v1.2.0
