@@ -14,6 +14,19 @@ tasks:
     cmds:
       - go build -o $GOPATH/bin/argocd-mcp main.go
 
+  e2e-tests:
+    deps:
+      - install
+    env:
+      # required for e2e tests:
+      # - ARGOCD_SERVER_URL=https://...
+      # - ARGOCD_SERVER_TOKEN=...
+      # optional:
+      # - ARGOCD_MCP_PORT=8080
+      # - ARGOCD_MCP_DEBUG=true
+    cmds:
+      - go test ./e2e-tests/... -v --failfast
+
   build-image:
     cmds:
       - podman build -t argocd-mcp:latest . -f Containerfile.yaml

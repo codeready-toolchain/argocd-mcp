@@ -70,7 +70,10 @@ var UnhealthyApplicationResourcesTool = &mcp.Tool{
 		},
 		Required: []string{"name"},
 	},
+	OutputSchema: UnhealthyApplicationResourcesOutputSchema,
 }
+
+var UnhealthyApplicationResourcesOutputSchema, _ = jsonschema.For[UnhealthyApplicationResourcesOutput](&jsonschema.ForOptions{})
 
 type UnhealthyApplicationResourcesInput struct {
 	Name string `json:"name"`

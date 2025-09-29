@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
@@ -14,16 +15,19 @@ import (
 )
 
 var UnhealthyApplicationsTool = &mcp.Tool{
-	Name:        "unhealthyApplications",
-	Description: "list the Unhealthy ('Degraded' and 'Progressing') Applications in Argo CD",
+	Name:         "unhealthyApplications",
+	Description:  "list the unhealthy ('degraded' and 'progressing') Applications in Argo CD",
+	OutputSchema: UnhealthyApplicationsOutputSchema,
 }
+
+var UnhealthyApplicationsOutputSchema, _ = jsonschema.For[UnhealthyApplicationsOutput](&jsonschema.ForOptions{})
 
 type UnhealthyApplicationsInput struct {
 }
 
 type UnhealthyApplicationsOutput struct {
-	Degraded    []string `json:"degraded"`
-	Progressing []string `json:"progressing"`
+	Degraded    []string `json:"degraded,omitempty"`
+	Progressing []string `json:"progressing,omitempty"`
 }
 
 func UnhealthyApplicationsToolHandle(logger *slog.Logger, cl *ArgoCDClient) mcp.ToolHandlerFor[UnhealthyApplicationsInput, UnhealthyApplicationsOutput] {
