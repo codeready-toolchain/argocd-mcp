@@ -5,9 +5,9 @@ go 1.24.6
 require (
 	github.com/argoproj/argo-cd/v3 v3.0.14
 	github.com/argoproj/gitops-engine v0.7.1-0.20250520182409-89c110b5952e
-	github.com/google/jsonschema-go v0.2.3
+	github.com/google/jsonschema-go v0.3.0
 	github.com/h2non/gock v1.2.0
-	github.com/modelcontextprotocol/go-sdk v0.6.0
+	github.com/modelcontextprotocol/go-sdk v0.8.0
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.10.0
 	k8s.io/apimachinery v0.33.0
