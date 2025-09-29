@@ -3,7 +3,7 @@ version: '3'
 tasks:
   test:
     cmds:
-      - go test ./... -v --failfast
+      - go test ./internal/... -v --failfast
 
   lint:
     cmds:
