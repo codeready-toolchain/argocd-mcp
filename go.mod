@@ -3,8 +3,8 @@ module github.com/xcoulon/argocd-mcp
 go 1.24.6
 
 require (
-	github.com/argoproj/argo-cd/v3 v3.0.14
-	github.com/argoproj/gitops-engine v0.7.1-0.20250520182409-89c110b5952e
+	github.com/argoproj/argo-cd/v3 v3.0.19
+	github.com/argoproj/gitops-engine v0.7.1-0.20250905153922-d96c3d51e4c4
 	github.com/google/jsonschema-go v0.3.0
 	github.com/h2non/gock v1.2.0
 	github.com/modelcontextprotocol/go-sdk v0.8.0
