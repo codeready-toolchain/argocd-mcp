@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/codeready-toolchain/argocd-mcp/internal/argocdmcp"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
-	"github.com/xcoulon/argocd-mcp/internal/argocdmcp"
 )
 
 var transport, url, token, insecureStr string

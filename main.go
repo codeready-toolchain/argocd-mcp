@@ -1,6 +1,6 @@
 package main
 
-import "github.com/xcoulon/argocd-mcp/cmd"
+import "github.com/codeready-toolchain/argocd-mcp/cmd"
 
 func main() {
 	cmd.Execute()
