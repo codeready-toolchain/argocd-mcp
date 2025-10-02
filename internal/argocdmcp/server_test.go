@@ -12,7 +12,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/xcoulon/argocd-mcp/internal/argocdmcp"
+	"github.com/codeready-toolchain/argocd-mcp/internal/argocdmcp"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	"github.com/h2non/gock"

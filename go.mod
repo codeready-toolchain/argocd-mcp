@@ -1,4 +1,4 @@
-module github.com/xcoulon/argocd-mcp
+module github.com/codeready-toolchain/argocd-mcp
 
 go 1.24.6
 
@@ -13,7 +13,7 @@ require (
 	k8s.io/apimachinery v0.33.0
 )
 
-// replace github.com/xcoulon/converse-mcp => ../converse-mcp
+// replace github.com/codeready-toolchain/converse-mcp => ../converse-mcp
 
 require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
