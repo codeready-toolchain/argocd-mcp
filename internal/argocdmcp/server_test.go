@@ -42,7 +42,7 @@ func TestServer(t *testing.T) {
 		init func(*testing.T) (*mcp.ClientSession, func())
 	}{
 		{
-			name: "stdio",
+			name: "stdio-ok",
 			init: func(t *testing.T) (*mcp.ClientSession, func()) {
 				mcpSrv := argocdmcp.NewServer(logger, argoCl)
 				// Create a client.
@@ -88,7 +88,7 @@ func TestServer(t *testing.T) {
 
 	for _, td := range testdata {
 		t.Run(td.name, func(t *testing.T) {
-			t.Run("call/unhealthyApplications", func(t *testing.T) {
+			t.Run("call/unhealthyApplications/ok", func(t *testing.T) {
 				gock.New("https://argocd-server").
 					Get("/api/v1/applications").
 					MatchHeader("Authorization", "Bearer secure-token").
@@ -124,7 +124,22 @@ func TestServer(t *testing.T) {
 				assert.Equal(t, expectedContent, actualStructuredContent)
 			})
 
-			t.Run("call/unhealthyApplicationResources", func(t *testing.T) {
+			t.Run("call/unhealthyApplications/argocd-unreachable", func(t *testing.T) {
+				// given
+				session, closeFunc := td.init(t)
+				defer closeFunc()
+
+				// when
+				result, err := session.CallTool(context.Background(), &mcp.CallToolParams{
+					Name: "unhealthyApplications",
+				})
+
+				// then
+				require.NoError(t, err)
+				assert.True(t, result.IsError)
+			})
+
+			t.Run("call/unhealthyApplicationResources/ok", func(t *testing.T) {
 				// given
 				gock.New("https://argocd-server").
 					Get("/api/v1/applications").
@@ -187,6 +202,24 @@ func TestServer(t *testing.T) {
 				err = runtime.DefaultUnstructuredConverter.FromUnstructured(result.StructuredContent.(map[string]any), &actualStructuredContent)
 				require.NoError(t, err)
 				assert.Equal(t, expectedContent, actualStructuredContent)
+			})
+
+			t.Run("call/unhealthyApplicationResources/argocd-unreachable", func(t *testing.T) {
+				// given
+				session, closeFunc := td.init(t)
+				defer closeFunc()
+
+				// when
+				result, err := session.CallTool(context.Background(), &mcp.CallToolParams{
+					Name: "unhealthyApplicationResources",
+					Arguments: map[string]any{
+						"name": "example",
+					},
+				})
+
+				// then
+				require.NoError(t, err)
+				assert.True(t, result.IsError)
 			})
 		})
 	}
