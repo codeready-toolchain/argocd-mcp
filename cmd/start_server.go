@@ -13,23 +13,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var transport, url, token, insecureStr string
-var insecure, debug bool
-var port int
+var transport, listen, argocdURL, argocdToken string
+var argocdInsecure, debug bool
 
 func init() {
-	startServerCmd.Flags().StringVar(&url, "argocd-url", "", "Specify the URL of the Argo CD server to query (required)")
+	startServerCmd.Flags().StringVar(&argocdURL, "argocd-url", "", "Specify the URL of the Argo CD server to query (required)")
 	if err := startServerCmd.MarkFlagRequired("argocd-url"); err != nil {
 		panic(err)
 	}
-	startServerCmd.Flags().StringVar(&token, "argocd-token", "", "Specify the token to include in the Authorization header (required)")
+	startServerCmd.Flags().StringVar(&argocdToken, "argocd-token", "", "Specify the token to include in the Authorization header (required)")
 	if err := startServerCmd.MarkFlagRequired("argocd-token"); err != nil {
 		panic(err)
 	}
-	startServerCmd.Flags().StringVar(&insecureStr, "insecure", "false", "Allow insecure TLS connections to the Argo CD server")
+	startServerCmd.Flags().BoolVar(&argocdInsecure, "insecure", false, "Allow insecure TLS connections to the Argo CD server")
 	startServerCmd.Flags().BoolVar(&debug, "debug", false, "Enable debug mode")
 	startServerCmd.Flags().StringVar(&transport, "transport", "http", "Choose between 'stdio' or 'http' transport")
-	startServerCmd.Flags().IntVarP(&port, "port", "p", 8080, "Specify the port to listen on when using the 'http' transport")
+	startServerCmd.Flags().StringVar(&listen, "listen", "0:0:0:0:8080", "Specify the host and port to listen on when using the 'http' transport")
 	startServerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -58,12 +57,12 @@ var startServerCmd = &cobra.Command{
 		logger := slog.New(slog.NewTextHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{
 			Level: lvl,
 		}))
-		logger.Info("starting the Argo CD MCP server", "transport", transport, "url", url, "insecure", insecure, "debug", debug)
+		logger.Info("starting the Argo CD MCP server", "transport", transport, "url", argocdURL, "insecure", argocdInsecure, "debug", debug)
 		if debug {
 			lvl.Set(slog.LevelDebug)
 			logger.Debug("debug mode enabled")
 		}
-		cl := argocdmcp.NewArgoCDClient(url, token, insecure)
+		cl := argocdmcp.NewArgoCDClient(argocdURL, argocdToken, argocdInsecure)
 		srv := argocdmcp.NewServer(logger, cl)
 		switch transport {
 		case "stdio":
@@ -79,7 +78,7 @@ var startServerCmd = &cobra.Command{
 				return srv
 			}, nil)
 			server := &http.Server{
-				Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+				Addr:         listen,
 				Handler:      handler,
 				ReadTimeout:  15 * time.Second,
 				WriteTimeout: 15 * time.Second,

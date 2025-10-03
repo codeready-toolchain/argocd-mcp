@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/codeready-toolchain/argocd-mcp/internal/argocdmcp"
+	testresources "github.com/codeready-toolchain/argocd-mcp/test/resources"
 
 	argocdv3 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	"github.com/h2non/gock"
@@ -21,12 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 )
-
-//go:embed argocd-applications-example.json
-var exampleApplicationsStr string
-
-//go:embed argocd-applications.json
-var applicationsStr string
 
 func TestServer(t *testing.T) {
 	// given
@@ -93,7 +88,7 @@ func TestServer(t *testing.T) {
 					Get("/api/v1/applications").
 					MatchHeader("Authorization", "Bearer secure-token").
 					Reply(200).
-					BodyString(applicationsStr)
+					BodyString(testresources.ApplicationsStr)
 				defer gock.Off() // disable HTTP interceptor after test execution
 				session, closeFunc := td.init(t)
 				defer closeFunc()
@@ -105,6 +100,7 @@ func TestServer(t *testing.T) {
 
 				// then
 				require.NoError(t, err)
+				require.False(t, result.IsError)
 				// expected content
 				expectedContent := map[string]any{
 					"degraded":    []any{"a-degraded-application", "another-degraded-application"},
@@ -146,7 +142,7 @@ func TestServer(t *testing.T) {
 					MatchParam("name", "example").
 					MatchHeader("Authorization", "Bearer secure-token").
 					Reply(200).
-					BodyString(exampleApplicationsStr)
+					BodyString(testresources.ExampleApplicationStr)
 				defer gock.Off() // disable HTTP interceptor after test execution
 				session, closeFunc := td.init(t)
 				defer closeFunc()

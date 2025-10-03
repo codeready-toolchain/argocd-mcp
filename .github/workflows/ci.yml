@@ -28,6 +28,12 @@ jobs:
     - name: Test
       run: |
         task test
+    
+    - name: E2E Tests
+      env:
+        GOPATH: '/home/runner/go'
+      run: |
+        task test-e2e
   
   lint:
     name: Lint
