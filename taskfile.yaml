@@ -13,19 +13,24 @@ tasks:
   install:
     cmds:
       - go build -o $GOPATH/bin/argocd-mcp main.go
+ 
+  install-argocd-mock:
+    cmds:
+      - go build -o $GOPATH/bin/argocd-mock test/e2e/argocd-mock/main.go
 
-  e2e-tests:
+  test-e2e:
     deps:
       - install
+      - install-argocd-mock
     env:
       # required for e2e tests:
-      # - ARGOCD_SERVER_URL=https://...
-      # - ARGOCD_SERVER_TOKEN=...
-      # optional:
-      # - ARGOCD_MCP_PORT=8080
-      # - ARGOCD_MCP_DEBUG=true
+      MCP_SERVER_LISTEN: localhost:50081
+      MCP_SERVER_DEBUG: true
+      ARGOCD_SERVER_LISTEN: localhost:50084
+      ARGOCD_SERVER_TOKEN: secure-token
+      ARGOCD_SERVER_DEBUG: true
     cmds:
-      - go test ./e2e-tests/... -v --failfast
+     - go test github.com/codeready-toolchain/argocd-mcp/test/e2e/... -v -failfast
 
   build-image:
     cmds:

@@ -36,4 +36,4 @@ USER 1001
 
 EXPOSE ${ARGOCD_MCP_PORT}
 
-CMD /usr/local/bin/argocd-mcp http --argocd-url $ARGOCD_MCP_URL --argocd-token $ARGOCD_MCP_TOKEN --insecure $ARGOCD_MCP_INSECURE --debug $ARGOCD_MCP_DEBUG --port $ARGOCD_MCP_PORT
+CMD /usr/local/bin/argocd-mcp --transport http --argocd-url $ARGOCD_MCP_URL --argocd-token $ARGOCD_MCP_TOKEN --insecure $ARGOCD_MCP_INSECURE --debug $ARGOCD_MCP_DEBUG --port $ARGOCD_MCP_PORT
