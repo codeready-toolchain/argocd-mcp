@@ -29,7 +29,6 @@ func init() {
 	startServerCmd.Flags().BoolVar(&debug, "debug", false, "Enable debug mode")
 	startServerCmd.Flags().StringVar(&transport, "transport", "http", "Choose between 'stdio' or 'http' transport")
 	startServerCmd.Flags().StringVar(&listen, "listen", ":8080", "Specify the host and port to listen on when using the 'http' transport")
-	startServerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
