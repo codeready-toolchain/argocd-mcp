@@ -52,6 +52,7 @@ and add the following MCP server definition:
         "argocd-mcp": {
             "command": "<path/to/argocd-mcp>",
             "args": [
+                "--transport",
                 "stdio",
                 "--argocd-token"
                 "<token>",
@@ -77,6 +78,7 @@ Edit your `~/.cursor/mcp.json` file with the following contents:
     "argocd-mcp": {
       "command": "<path/to/argocd-mcp>",
       "args": [
+        "--transport",
         "stdio",
         "--argocd-token",
         "<token>",
@@ -97,13 +99,13 @@ Edit your `~/.cursor/mcp.json` file with the following contents:
 Start the Argo CD MCP server from the binary after running `task install`:
 
 ```
-argocd-mcp http --argocd-url=<url> --argocd-token=<token> --debug=<true|false> --port=<port>
+argocd-mcp --transport=http --argocd-url=<url> --argocd-token=<token> --debug=<true|false> --listen=<[host]:port>
 ```
 
 Or start the Argo CD MCP server as a container after running `task build-image`:
 
-```
-podman run -d --name argocd-mcp -e ARGOCD_MCP_URL=<url> -e ARGOCD_MCP_TOKEN=<token> -e ARGOCD_MCP_DEBUG=<true|false> -p 8080:8080 argocd-mcp:latest
+```bash
+podman run -d --name argocd-mcp --transport http -e ARGOCD_MCP_URL=<url> -e ARGOCD_MCP_TOKEN=<token> -e ARGOCD_MCP_DEBUG=<true|false> -p 8080:8080 argocd-mcp:latest
 ```
 
 Edit your `~/.cursor/mcp.json` file with the following contents:
