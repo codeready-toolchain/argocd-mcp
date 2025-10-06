@@ -99,12 +99,12 @@ Edit your `~/.cursor/mcp.json` file with the following contents:
 Start the Argo CD MCP server from the binary after running `task install`:
 
 ```
-argocd-mcp http --argocd-url=<url> --argocd-token=<token> --debug=<true|false> --listen=<[host]:port>
+argocd-mcp --transport=http --argocd-url=<url> --argocd-token=<token> --debug=<true|false> --listen=<[host]:port>
 ```
 
 Or start the Argo CD MCP server as a container after running `task build-image`:
 
-```
+```bash
 podman run -d --name argocd-mcp --transport http -e ARGOCD_MCP_URL=<url> -e ARGOCD_MCP_TOKEN=<token> -e ARGOCD_MCP_DEBUG=<true|false> -p 8080:8080 argocd-mcp:latest
 ```
 

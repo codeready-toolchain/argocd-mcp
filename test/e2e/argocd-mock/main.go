@@ -43,8 +43,8 @@ func main() {
 			return
 		}
 		logger.Debug("serving mock applications")
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(resources.ApplicationsStr))
 	})
 

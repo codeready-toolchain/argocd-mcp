@@ -33,6 +33,7 @@ jobs:
       env:
         GOPATH: '/home/runner/go'
       run: |
+        export PATH="$GOPATH/bin:$PATH"
         task test-e2e
   
   lint:
