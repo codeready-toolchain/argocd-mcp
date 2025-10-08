@@ -102,10 +102,10 @@ func listUnhealthyApplicationResources(ctx context.Context, logger *slog.Logger,
 		return nil, fmt.Errorf("failed to get application '%s' from Argo CD: %w", name, err)
 	}
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected Argo CD status %d for application '%s': %s", resp.StatusCode, name, string(body))
 	}
@@ -117,13 +117,6 @@ func listUnhealthyApplicationResources(ctx context.Context, logger *slog.Logger,
 		return nil, fmt.Errorf("no application found with name %s", name)
 	}
 	app := apps.Items[0]
-	if logger.Enabled(ctx, slog.LevelDebug) {
-		resourcesStr, err := json.Marshal(app.Status.Resources)
-		if err != nil {
-			logger.Error("failed to convert unhealthy resources to text", "error", err.Error())
-		}
-		logger.DebugContext(ctx, "returned 'tools/call' response", "tool", "unhealthyApplicationResources", "app", name, "resourcesStr", resourcesStr)
-	}
 	// retain unhealthy resources from the name status
 	unhealthyResources := &UnhealthyResources{
 		Resources: []argocdv3.ResourceStatus{},
@@ -140,7 +133,6 @@ func listUnhealthyApplicationResources(ctx context.Context, logger *slog.Logger,
 		}
 		logger.DebugContext(ctx, "returned 'tools/call' response", "tool", "unhealthyApplicationResources", "app", name, "result", string(unhealthyResourcesStr))
 	}
-
 	return unhealthyResources, nil
 }
 

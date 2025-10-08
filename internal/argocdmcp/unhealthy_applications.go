@@ -56,10 +56,10 @@ func listUnhealthyApplications(ctx context.Context, logger *slog.Logger, cl *Arg
 		return nil, err
 	}
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected Argo CD status %d: %s", resp.StatusCode, string(body))
 	}
