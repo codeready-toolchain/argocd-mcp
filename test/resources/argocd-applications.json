@@ -14,6 +14,9 @@
       "status": {
         "health": {
           "status": "Healthy"
+        },
+        "sync": {
+          "status": "Synced"
         }
       }
     },
@@ -28,6 +31,43 @@
       "status": {
         "health": {
           "status": "Healthy"
+        },
+        "sync": {
+          "status": "Synced"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "an-out-of-sync-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Healthy"
+        },
+        "sync": {
+          "status": "OutOfSync"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "another-out-of-sync-application",
+        "namespace": "argocd"
+      },
+      "spec": {
+        
+      },
+      "status": {
+        "health": {
+          "status": "Healthy"
+        },
+        "sync": {
+          "status": "OutOfSync"
         }
       }
     },

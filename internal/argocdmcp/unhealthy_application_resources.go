@@ -31,7 +31,7 @@ func UnhealthyApplicationResourcesPromptHandle(logger *slog.Logger, cl *ArgoCDCl
 		if !ok {
 			return nil, fmt.Errorf("'name' not found in arguments or not a string")
 		}
-		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, app)
+		unhealthyResources, err := listUnhealthyResources(ctx, logger, cl, app)
 		if err != nil {
 			return nil, err
 		}
@@ -85,37 +85,17 @@ type UnhealthyApplicationResourcesOutput struct {
 
 func UnhealthyApplicationResourcesToolHandle(logger *slog.Logger, cl *ArgoCDClient) mcp.ToolHandlerFor[UnhealthyApplicationResourcesInput, UnhealthyApplicationResourcesOutput] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, in UnhealthyApplicationResourcesInput) (*mcp.CallToolResult, UnhealthyApplicationResourcesOutput, error) {
-		unhealthyResources, err := getUnhealthyResources(ctx, logger, cl, in.Name)
+		unhealthyResources, err := listUnhealthyResources(ctx, logger, cl, in.Name)
 		if err != nil {
 			return nil, UnhealthyApplicationResourcesOutput{}, err
 		}
-		// unhealthyResourcesText, err := json.Marshal(unhealthyResources)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("failed to convert unhealthy resources to 'text' content: %w", err)
-		// }
-		// unhealthyResourcesStructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unhealthyResources)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("failed to convert unhealthy resources to 'structured' content: %w", err)
-		// }
-		// result := &mcp.CallToolResult{
-		// 	Content: []mcp.Content{
-		// 		&mcp.TextContent{ // legacy content - see https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
-		// 			Text: string(unhealthyResourcesText),
-		// 		},
-		// 	},
-		// 	StructuredContent: unhealthyResourcesStructured,
-		// 	IsError:           false,
-		// }
-		// if logger.Enabled(ctx, slog.LevelDebug) {
-		// 	logger.DebugContext(ctx, "returned 'tools/call' response", "content", result)
-		// }
 		return nil, UnhealthyApplicationResourcesOutput{
 			Resources: unhealthyResources.Resources,
 		}, nil
 	}
 }
 
-func getUnhealthyResources(ctx context.Context, _ *slog.Logger, cl *ArgoCDClient, name string) (*UnhealthyResources, error) {
+func listUnhealthyResources(ctx context.Context, logger *slog.Logger, cl *ArgoCDClient, name string) (*UnhealthyResources, error) {
 	resp, err := cl.GetWithContext(ctx, fmt.Sprintf("api/v1/applications?name=%s", name)) // no heading `/` in the path
 	if err != nil {
 		return nil, fmt.Errorf("failed to get name '%s' from Argo CD: %w", name, err)
@@ -142,6 +122,14 @@ func getUnhealthyResources(ctx context.Context, _ *slog.Logger, cl *ArgoCDClient
 			unhealthyResources.Resources = append(unhealthyResources.Resources, resource)
 		}
 	}
+	if logger.Enabled(ctx, slog.LevelDebug) {
+		unhealthyResourcesStr, err := json.Marshal(unhealthyResources)
+		if err != nil {
+			logger.Error("failed to convert unhealthy resources to text", "error", err.Error())
+		}
+		logger.DebugContext(ctx, "returned 'tools/call' response", "tool", "unhealthyApplicationResources", "result", string(unhealthyResourcesStr))
+	}
+
 	return unhealthyResources, nil
 }
 
