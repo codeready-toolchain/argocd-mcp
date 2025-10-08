@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
 
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -59,9 +60,12 @@ func listUnhealthyApplications(ctx context.Context, logger *slog.Logger, cl *Arg
 		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected Argo CD status %d: %s", resp.StatusCode, string(body))
+	}
 	apps := &argocdv3.ApplicationList{}
 	if err = json.Unmarshal(body, apps); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal name list: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal application list: %w", err)
 	}
 	unhealthyApps := map[string][]string{}
 	for _, app := range apps.Items {

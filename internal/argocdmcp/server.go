@@ -15,7 +15,7 @@ func NewServer(logger *slog.Logger, cl *ArgoCDClient) *mcp.Server {
 		},
 		&mcp.ServerOptions{
 			InitializedHandler: func(_ context.Context, ir *mcp.InitializedRequest) {
-				logger.Info("initialized", "session_id", ir.Session.ID())
+				logger.Debug("initialized", "session_id", ir.Session.ID())
 			},
 		},
 	)
