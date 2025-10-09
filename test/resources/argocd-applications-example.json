@@ -113,6 +113,13 @@
             }
           },
           {
+            "group": "operator.tekton.dev",
+            "version": "v1alpha1",
+            "kind": "TektonConfig",
+            "name": "config",
+            "status": "OutOfSync"
+          },
+          {
             "group": "rbac.authorization.k8s.io",
             "version": "v1",
             "kind": "ClusterRoleBinding",

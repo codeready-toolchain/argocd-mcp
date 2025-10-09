@@ -76,6 +76,7 @@ func TestServer(t *testing.T) {
 				expectedContent := map[string]any{
 					"degraded":    []any{"a-degraded-application", "another-degraded-application"},
 					"progressing": []any{"a-progressing-application", "another-progressing-application"},
+					"outOfSync":   []any{"an-out-of-sync-application", "another-out-of-sync-application"},
 				}
 				expectedContentText, err := json.Marshal(expectedContent)
 				require.NoError(t, err)
@@ -126,6 +127,13 @@ func TestServer(t *testing.T) {
 							Health: &argocdv3.HealthStatus{
 								Status: "Missing",
 							},
+						},
+						{
+							Group:   "operator.tekton.dev",
+							Version: "v1alpha1",
+							Kind:    "TektonConfig",
+							Name:    "config",
+							Status:  "OutOfSync",
 						},
 					},
 				}

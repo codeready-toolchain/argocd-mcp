@@ -1,6 +1,7 @@
 package argocdmcp
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -12,7 +13,11 @@ func NewServer(logger *slog.Logger, cl *ArgoCDClient) *mcp.Server {
 			Name:    "argocd-mcp",
 			Version: "0.1",
 		},
-		&mcp.ServerOptions{},
+		&mcp.ServerOptions{
+			InitializedHandler: func(_ context.Context, ir *mcp.InitializedRequest) {
+				logger.Debug("initialized", "session_id", ir.Session.ID())
+			},
+		},
 	)
 
 	s.AddPrompt(UnhealthyResourcesPrompt, UnhealthyApplicationResourcesPromptHandle(logger, cl))
