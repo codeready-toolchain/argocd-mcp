@@ -128,6 +128,13 @@ func TestServer(t *testing.T) {
 								Status: "Missing",
 							},
 						},
+						{
+							Group:   "operator.tekton.dev",
+							Version: "v1alpha1",
+							Kind:    "TektonConfig",
+							Name:    "config",
+							Status:  "OutOfSync",
+						},
 					},
 				}
 				expectedResourcesText, err := json.Marshal(expectedContent)

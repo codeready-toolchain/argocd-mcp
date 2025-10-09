@@ -70,7 +70,7 @@ func listUnhealthyApplications(ctx context.Context, logger *slog.Logger, cl *Arg
 	unhealthyApps := map[string][]string{}
 	for _, app := range apps.Items {
 		switch app.Status.Health.Status {
-		case argocdhealth.HealthStatusDegraded, argocdhealth.HealthStatusProgressing:
+		case argocdhealth.HealthStatusDegraded, argocdhealth.HealthStatusProgressing, argocdhealth.HealthStatusMissing, argocdhealth.HealthStatusUnknown, argocdhealth.HealthStatusSuspended:
 			addApplicationToUnhealthyApps(unhealthyApps, string(app.Status.Health.Status), app.Name)
 		case argocdhealth.HealthStatusHealthy:
 			if app.Status.Sync.Status == argocdv3.SyncStatusCodeOutOfSync {

@@ -122,7 +122,8 @@ func listUnhealthyApplicationResources(ctx context.Context, logger *slog.Logger,
 		Resources: []argocdv3.ResourceStatus{},
 	}
 	for _, resource := range app.Status.Resources {
-		if resource.Health != nil && resource.Health.Status != health.HealthStatusHealthy {
+		if (resource.Health != nil && resource.Health.Status != health.HealthStatusHealthy) ||
+			resource.Status == argocdv3.SyncStatusCodeOutOfSync {
 			unhealthyResources.Resources = append(unhealthyResources.Resources, resource)
 		}
 	}
