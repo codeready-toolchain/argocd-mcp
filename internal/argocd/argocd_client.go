@@ -1,4 +1,4 @@
-package argocdmcp
+package argocd
 
 import (
 	"context"
@@ -7,13 +7,17 @@ import (
 	"net/http"
 )
 
-type ArgoCDClient struct {
+type Client interface {
+	GetWithContext(ctx context.Context, path string) (*http.Response, error)
+}
+
+type client struct {
 	*http.Client
 	host  string
 	token string
 }
 
-func NewArgoCDClient(host string, token string, insecure bool) *ArgoCDClient {
+func NewClient(host string, token string, insecure bool) Client {
 	cl := http.DefaultClient
 	if insecure {
 		cl.Transport = &http.Transport{
@@ -22,14 +26,14 @@ func NewArgoCDClient(host string, token string, insecure bool) *ArgoCDClient {
 			},
 		}
 	}
-	return &ArgoCDClient{
+	return &client{
 		Client: cl,
 		host:   host,
 		token:  token,
 	}
 }
 
-func (c *ArgoCDClient) GetWithContext(ctx context.Context, path string) (*http.Response, error) {
+func (c *client) GetWithContext(ctx context.Context, path string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/%s", c.host, path), nil)
 	if err != nil {
 		return nil, err

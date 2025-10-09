@@ -22,13 +22,6 @@ tasks:
     deps:
       - install
       - install-argocd-mock
-    env:
-      # required for e2e tests:
-      MCP_SERVER_LISTEN: localhost:50081
-      MCP_SERVER_DEBUG: true
-      ARGOCD_SERVER_LISTEN: localhost:50084
-      ARGOCD_SERVER_TOKEN: secure-token
-      ARGOCD_SERVER_DEBUG: true
     cmds:
      - go test github.com/codeready-toolchain/argocd-mcp/test/e2e/... -v -failfast
 
