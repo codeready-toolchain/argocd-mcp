@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/codeready-toolchain/argocd-mcp/internal/argocdmcp"
+	"github.com/codeready-toolchain/argocd-mcp/internal/argocd"
+	"github.com/codeready-toolchain/argocd-mcp/internal/server"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )
@@ -61,8 +62,8 @@ var startServerCmd = &cobra.Command{
 			lvl.Set(slog.LevelDebug)
 			logger.Debug("debug mode enabled")
 		}
-		cl := argocdmcp.NewArgoCDClient(argocdURL, argocdToken, argocdInsecure)
-		srv := argocdmcp.NewServer(logger, cl)
+		cl := argocd.NewClient(argocdURL, argocdToken, argocdInsecure)
+		srv := server.New(logger, cl)
 		switch transport {
 		case "stdio":
 			t := &mcp.LoggingTransport{
